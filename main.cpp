@@ -1,12 +1,13 @@
-#include <QCoreApplication>
-#include "myserver.h"
+#include <QApplication>
+#include <QtWidgets>
+#include "MyServer.h"
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication a(argc, argv);
+int main(int argc, char *argv[]) {
 
-    MyServer* server = new MyServer();
-    //lolkek
-    server->startServer();
+    QApplication a(argc, argv);
+
+    MyServer server(5005);
+    server.show();
+
     return a.exec();
 }
