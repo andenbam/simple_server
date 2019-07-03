@@ -1,5 +1,6 @@
 QT -= gui
 QT += network
+QT += widgets
 CONFIG += c++11 console
 CONFIG -= app_bundle
 
@@ -24,4 +25,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    myserver.h
+    MyServer.h

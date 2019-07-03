@@ -1,22 +1,18 @@
-#include "myserver.h"
+#include "MyServer.h"
 
 MyServer::MyServer(){}
 MyServer::~MyServer(){}
 
-void MyServer::startServer()
-{
-    if (this->listen(QHostAddress::Any, 5555))
-    {
+void MyServer::startServer() {
+    if (this->listen(QHostAddress::Any, 5555)) {
         qDebug()<<"Listening";
     }
-    else
-    {
+    else {
         qDebug()<<"Not listening";
     }
 }
 
-void MyServer::incomingConnetction(int socketDescriptor)
-{
+void MyServer::incomingConnetction(int socketDescriptor) {
     socket = new QTcpSocket(this);
     socket->setSocketDescriptor(socketDescriptor);
 
@@ -31,8 +27,7 @@ void MyServer::incomingConnetction(int socketDescriptor)
 }
 
 void MyServer::sockReady(){}
-void MyServer::sockDisc()
-{
+void MyServer::sockDisc() {
     qDebug()<<"Disconnected";
     socket->deleteLater();
 }

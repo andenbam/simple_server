@@ -1,12 +1,17 @@
 #ifndef MYSERVER_H
 #define MYSERVER_H
 
-#include <QTcpServer>
-#include <QTcpSocket>
+#include <QWidget>
+class QTcpServer;
+class QTextEdit;
+class QTcpSocket;
 
-class MyServer: public QTcpServer
+class MyServer: public QWidget
 {
     Q_OBJECT
+private:
+    QTcpServer* m_ptcpServer;
+
 public:
     MyServer();
     ~MyServer();
