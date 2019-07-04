@@ -68,7 +68,8 @@ void MyServer::slotStart() {
         return;
     }
 
-    clients = new QTcpSocketList;
+    clientsMap = new QMap<qintptr, QAbstractSocket*>();
+    clientsDescritors = new QList<qintptr>;
 
     connect(server, &QTcpServer::newConnection,
               this, &MyServer::slotNewConnection);
@@ -79,14 +80,12 @@ void MyServer::slotStart() {
 
 void MyServer::slotStop() {
 
-    for(int i = 0; i < clients->size(); i++){
+    for (int i=0; i < clientsDescritors->size(); i++) {
 
-        sendToClient(clients->at(i), "DISCONNECTING");
-        clients -> at(i)->disconnectFromHost();
+        QAbstractSocket* client = clientsMap->value(clientsDescritors->at(i));
+        sendToClient(client, "DISCONNECTING");
+        client->close();
     }
-
-    clients -> clear();
-    clients = nullptr;
 
     if (server){
 
@@ -108,13 +107,21 @@ void MyServer::slotStop() {
 void MyServer::slotNewConnection() {
 
     QTcpSocket* clientSocket = server->nextPendingConnection();
+    qintptr ptr = clientSocket->socketDescriptor();
+    if (clientsMap->value(ptr, nullptr) == nullptr){
 
-    clients->push_back(clientSocket);
+        clientsDescritors -> push_back(ptr);
+        clientsMap        -> insert(ptr, clientSocket);
+        textBox->append(QString("new user [").append(QString::number(ptr)).append("] connected"));
+    } else {
+
+        textBox->append(QString("user [").append(QString::number(ptr)).append("] reconnected"));
+    }
 
     connect(clientSocket, &QAbstractSocket::disconnected,
-                           &QAbstractSocket::deleteLater);
+                          &QAbstractSocket::deleteLater);
     connect(clientSocket, &QAbstractSocket::readyRead,
-                     this, &MyServer::slotReadClient);
+                    this, &MyServer::slotReadClient);
 
     sendToClient(clientSocket, "CONNECTED");
 }
@@ -123,12 +130,13 @@ void MyServer::slotReadClient() {
 
     QAbstractSocket* clientSocket = static_cast<QAbstractSocket*>(sender());
 
-    int clientIndex = 0;
+    qintptr clientIndex = -1;
 
-    for(int i = 0; i < clients->size(); i++){
+    for(int i = 0; i < clientsDescritors->size(); i++){
 
-        if (clients->takeAt(i) == clientSocket){
-            clientIndex = i;
+        if (clientsDescritors->takeAt(i) == clientSocket->socketDescriptor()){
+
+            clientIndex = clientSocket->socketDescriptor();
             break;
         }
     }

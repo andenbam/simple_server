@@ -8,8 +8,6 @@ class QPushButton;
 class QAbstractSocket;
 class QLineEdit;
 
-typedef QList<QAbstractSocket*> QTcpSocketList;
-
 class MyServer: public QWidget {
     Q_OBJECT
 private:
@@ -18,7 +16,8 @@ private:
     QTextEdit* textBox;
     QPushButton* startButton;
     QPushButton* stopButton;
-    QTcpSocketList* clients;
+    QMap<qintptr, QAbstractSocket*>* clientsMap;
+    QList<qintptr>* clientsDescritors;
 
 private:
     void sendToClient(QAbstractSocket*, const QString&);
