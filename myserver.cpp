@@ -83,8 +83,7 @@ void MyServer::slotStop() {
     for(int i = 0; i < clients->size(); i++){
 
         sendToClient(clients->at(i), "DISCONNECTING");
-        //clients->at(i)->disconnectFromHost();
-        clients->at(i)->close();
+        clients -> at(i)->disconnectFromHost();
     }
 
     clients -> clear();
@@ -136,13 +135,6 @@ void MyServer::slotReadClient() {
     }
 
     QString incomMessage = QString::fromUtf8(clientSocket->read(256));
-
-    if (incomMessage == "close"){
-
-        sendToClient(clientSocket, "CLOSING");
-        clientSocket->close();
-        return;
-    }
 
     textBox -> append(QString(QTime::currentTime().toString(Qt::LocalDate)
               .append(" ").append("client[").append(QString::number(clientIndex)).append("]: ")
