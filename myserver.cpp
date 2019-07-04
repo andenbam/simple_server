@@ -68,8 +68,7 @@ void MyServer::slotStart() {
         return;
     }
 
-    clientsMap = new QMap<qintptr, QAbstractSocket*>();
-    clientsDescritors = new QList<qintptr>;
+    clientsList = new QList<qintptr>;
 
     connect(server, &QTcpServer::newConnection,
               this, &MyServer::slotNewConnection);
@@ -79,13 +78,6 @@ void MyServer::slotStart() {
   }
 
 void MyServer::slotStop() {
-
-    for (int i=0; i < clientsDescritors->size(); i++) {
-
-        QAbstractSocket* client = clientsMap->value(clientsDescritors->at(i));
-        sendToClient(client, "DISCONNECTING");
-        client->close();
-    }
 
     if (server){
 
@@ -107,19 +99,14 @@ void MyServer::slotStop() {
 void MyServer::slotNewConnection() {
 
     QTcpSocket* clientSocket = server->nextPendingConnection();
-    qintptr ptr = clientSocket->socketDescriptor();
-    if (clientsMap->value(ptr, nullptr) == nullptr){
 
-        clientsDescritors -> push_back(ptr);
-        clientsMap        -> insert(ptr, clientSocket);
-        textBox->append(QString("new user [").append(QString::number(ptr)).append("] connected"));
-    } else {
+    clientsList->push_back(clientSocket->socketDescriptor());
 
-        textBox->append(QString("user [").append(QString::number(ptr)).append("] reconnected"));
-    }
+    textBox->append(QString::number(clientSocket->socketDescriptor()));
 
     connect(clientSocket, &QAbstractSocket::disconnected,
                           &QAbstractSocket::deleteLater);
+
     connect(clientSocket, &QAbstractSocket::readyRead,
                     this, &MyServer::slotReadClient);
 
@@ -132,14 +119,13 @@ void MyServer::slotReadClient() {
 
     qintptr clientIndex = -1;
 
-    for(int i = 0; i < clientsDescritors->size(); i++){
-
-        if (clientsDescritors->takeAt(i) == clientSocket->socketDescriptor()){
-
-            clientIndex = clientSocket->socketDescriptor();
-            break;
+    for (int i = 0; i < clientsList->size(); i++) {
+        if (clientsList->at(i) == clientSocket->socketDescriptor()){
+            clientIndex = i;
         }
     }
+
+    textBox->append(QString::number(clientSocket->socketDescriptor()));
 
     QString incomMessage = QString::fromUtf8(clientSocket->read(256));
 

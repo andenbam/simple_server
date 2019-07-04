@@ -16,8 +16,7 @@ private:
     QTextEdit* textBox;
     QPushButton* startButton;
     QPushButton* stopButton;
-    QMap<qintptr, QAbstractSocket*>* clientsMap;
-    QList<qintptr>* clientsDescritors;
+    QList<qintptr>* clientsList;
 
 private:
     void sendToClient(QAbstractSocket*, const QString&);
