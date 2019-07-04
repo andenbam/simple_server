@@ -41,9 +41,11 @@ MyServer::MyServer() : QWidget () {
 void MyServer::slotNewConnection() {
 
     QTcpSocket* pClientSocket = tcpServer->nextPendingConnection();
+
     connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()));
-    sendToClient(pClientSocket, "Server Response: Connected!");
+
+    sendToClient(pClientSocket, "server-response:connected");
 }
 
 void MyServer::slotStart() {
@@ -52,9 +54,9 @@ void MyServer::slotStart() {
     tcpServer = new QTcpServer(this);
 
     if (!tcpServer->listen(QHostAddress::Any, quint16(portLine->text().toInt()))) {
+
         QMessageBox::critical(nullptr, "SeverError",
-                              "Unnable to start the server:" +
-                              tcpServer->errorString());
+                     "Unnable to start the server:" + tcpServer->errorString());
         tcpServer->close();
         return;
     }
@@ -64,23 +66,24 @@ void MyServer::slotStart() {
     textBox->append("#server is on...");
     textBox->append(QString("host is ").append(tcpServer->serverAddress().toString()));
 
-    portLine->setDisabled(true);
-    stopButton->setDisabled(false);
-    startButton->setDisabled(true);
+    portLine    -> setDisabled(true);
+    startButton -> setDisabled(true);
+    stopButton  -> setDisabled(false);
   }
 
 void MyServer::slotStop() {
 
     disconnect(tcpServer, &QTcpServer::newConnection, this, &MyServer::slotNewConnection);
-    tcpServer->close();
+
+    tcpServer -> close();
     delete tcpServer;
     tcpServer = nullptr;
 
     textBox->clear();
 
-    portLine->setDisabled(false);
-    stopButton->setDisabled(true);
-    startButton->setDisabled(false);
+    portLine    -> setDisabled(false);
+    startButton -> setDisabled(false);
+    stopButton  -> setDisabled(true);
 }
 
 void MyServer::slotReadClient() {
@@ -91,12 +94,12 @@ void MyServer::slotReadClient() {
 
     textBox->append(str);
 
-    sendToClient(static_cast<QTcpSocket*>(sender()), "#Server response: Received \"" + str + "\"#");
+    sendToClient(socket, "server-response:received \"" + str + "\"");
 }
 
 //46.0.199.93
 //5000
-void MyServer::sendToClient(QTcpSocket *pSocket, const QString &str) {
+void MyServer::sendToClient(QAbstractSocket *pSocket, const QString &str) {
 
     pSocket->write(QTime::currentTime().toString(Qt::LocalDate).
                    append(" ").append(str).toLocal8Bit());

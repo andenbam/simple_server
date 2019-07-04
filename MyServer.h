@@ -5,7 +5,7 @@
 class QTcpServer;
 class QTextEdit;
 class QPushButton;
-class QTcpSocket;
+class QAbstractSocket;
 class QLineEdit;
 
 class MyServer: public QWidget {
@@ -18,7 +18,7 @@ private:
     QPushButton* stopButton;
 
 private:
-    void sendToClient(QTcpSocket* pSocket, const QString& str);
+    void sendToClient(QAbstractSocket* pSocket, const QString& str);
 public:
     MyServer();
 
