@@ -64,20 +64,21 @@ void MyServer::slotStart() {
     textBox->append("#server is on...");
     textBox->append(QString("host is ").append(tcpServer->serverAddress().toString()));
 
+    portLine->setDisabled(true);
     stopButton->setDisabled(false);
     startButton->setDisabled(true);
   }
 
 void MyServer::slotStop() {
 
-    textBox->append("*interrupting*");
     disconnect(tcpServer, &QTcpServer::newConnection, this, &MyServer::slotNewConnection);
     tcpServer->close();
     delete tcpServer;
     tcpServer = nullptr;
 
-    textBox->append("#server is off");
+    textBox->clear();
 
+    portLine->setDisabled(false);
     stopButton->setDisabled(true);
     startButton->setDisabled(false);
 }
