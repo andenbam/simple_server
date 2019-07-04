@@ -95,7 +95,7 @@ void MyServer::slotStop() {
                      this, &MyServer::slotNewConnection);
 
         server -> close();
-       // delete server;
+        delete server;
         server = nullptr;
     }
 
