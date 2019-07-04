@@ -43,20 +43,6 @@ MyServer::MyServer() : QWidget () {
     setLayout(layout);
 }
 
-void MyServer::slotNewConnection() {
-
-    QTcpSocket* clientSocket = server->nextPendingConnection();
-
-    clients->append(clientSocket);
-
-    connect(clientSocket, &QAbstractSocket::disconnected,
-                           &QAbstractSocket::deleteLater);
-    connect(clientSocket, &QAbstractSocket::readyRead,
-                     this, &MyServer::slotReadClient);
-
-    sendToClient(clientSocket, "server-response:connected");
-}
-
 void MyServer::slotStart() {
 
     textBox->append("*starting*");
@@ -82,7 +68,7 @@ void MyServer::slotStart() {
         return;
     }
 
-    clients = new QVector<QAbstractSocket*>;
+    clients = new QTcpSocketList;
 
     connect(server, &QTcpServer::newConnection,
               this, &MyServer::slotNewConnection);
@@ -96,7 +82,9 @@ void MyServer::slotStop() {
 
     for(int i = 0; i < clients->size(); i++){
 
-        clients->takeAt(i)->disconnectFromHost();
+        sendToClient(clients->at(i), "DISCONNECTING");
+
+        clients->at(i)->disconnectFromHost();
     }
 
     clients -> clear();
@@ -107,9 +95,8 @@ void MyServer::slotStop() {
         disconnect(server, &QTcpServer::newConnection,
                      this, &MyServer::slotNewConnection);
 
-        if (server->isListening())
-            server -> close();
-
+        server -> close();
+       // delete server;
         server = nullptr;
     }
 
@@ -120,24 +107,48 @@ void MyServer::slotStop() {
     stopButton  -> setDisabled(true);
 }
 
+void MyServer::slotNewConnection() {
+
+    QTcpSocket* clientSocket = server->nextPendingConnection();
+
+    clients->push_back(clientSocket);
+
+    connect(clientSocket, &QAbstractSocket::disconnected,
+                           &QAbstractSocket::deleteLater);
+    connect(clientSocket, &QAbstractSocket::readyRead,
+                     this, &MyServer::slotReadClient);
+
+    sendToClient(clientSocket, "CONNECTED");
+}
+
 void MyServer::slotReadClient() {
 
-    QAbstractSocket* socket = static_cast<QAbstractSocket*>(sender());
+    QAbstractSocket* clientSocket = static_cast<QAbstractSocket*>(sender());
 
-    QString str = QString::fromUtf8(socket->read(256));
+    int clientIndex = 0;
 
-    textBox -> append(QString(QTime::currentTime().toString(Qt::LocalDate).
-                              append(" ").append("client: ").append(str)));
+    for(int i = 0; i < clients->size(); i++){
 
-    sendToClient(socket, "server-response:received \"" + str + "\"");
+        if (clients->takeAt(i) == clientSocket){
+            clientIndex = i;
+            break;
+        }
+    }
+
+    QString incomMessage = QString::fromUtf8(clientSocket->read(256));
+
+    textBox -> append(QString(QTime::currentTime().toString(Qt::LocalDate)
+              .append(" ").append("client[").append(QString::number(clientIndex)).append("]: ")
+              .append(incomMessage)));
+
+    sendToClient(clientSocket, "RECEIVED");
 }
 
 //46.0.199.93
 //5000
 void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
 
-    client->write(QTime::currentTime().toString(Qt::LocalDate).
-                   append(" ").append(message).toUtf8());
+    client->write(message.toUtf8());
 }
 
 
