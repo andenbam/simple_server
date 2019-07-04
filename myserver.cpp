@@ -10,11 +10,13 @@
 #include <QLineEdit>
 #include <QPushButton>
 
-MyServer::MyServer() :
-                QWidget () {
+MyServer::MyServer() : QWidget () {
 
     textBox = new QTextEdit();
     portLine = new QLineEdit();
+    portLine->setPlaceholderText("Port num.");
+    portLine->setText("5005");
+
     startButton = new QPushButton("start");
     stopButton = new QPushButton("stop");
     stopButton->setDisabled(true);
@@ -36,8 +38,7 @@ MyServer::MyServer() :
     setLayout(layout);
 }
 
-void MyServer::slotNewConnection()
-{
+void MyServer::slotNewConnection() {
 
     QTcpSocket* pClientSocket = tcpServer->nextPendingConnection();
     connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
@@ -63,8 +64,7 @@ void MyServer::slotStart() {
     startButton->setDisabled(true);
   }
 
-void MyServer::slotStop()
-{
+void MyServer::slotStop() {
 
     disconnect(tcpServer, &QTcpServer::newConnection, this, &MyServer::slotNewConnection);
     tcpServer->close();
@@ -76,6 +76,7 @@ void MyServer::slotStop()
 }
 
 void MyServer::slotReadClient() {
+
     QTcpSocket* pClientSocket = (QTcpSocket*)sender();
     char* data = new char[256];
     pClientSocket->read(data,256);
