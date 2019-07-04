@@ -140,7 +140,7 @@ void MyServer::slotReadClient() {
               .append(" ").append("client[").append(QString::number(clientIndex)).append("]: ")
               .append(incomMessage)));
 
-    sendToClient(clientSocket, "RECEIVED");
+    sendToClient(clientSocket, QString("RECEIVED {").append(incomMessage).append("}"));
 }
 
 //46.0.199.93
