@@ -11,7 +11,7 @@ class QLineEdit;
 class MyServer: public QWidget {
     Q_OBJECT
 private:
-    QTcpServer* tcpServer;
+    QTcpServer* server;
     QLineEdit* portLine;
     QTextEdit* textBox;
     QPushButton* startButton;

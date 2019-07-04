@@ -12,38 +12,45 @@
 
 MyServer::MyServer() : QWidget () {
 
-    textBox = new QTextEdit();
-    portLine = new QLineEdit();
-    portLine->setPlaceholderText("Port num.");
-    portLine->setText("5005");
+    textBox     = new QTextEdit();
+    portLine    = new QLineEdit();
+    startButton = new QPushButton("&Start");
+    stopButton  = new QPushButton("&Stop");
 
-    startButton = new QPushButton("start");
-    stopButton = new QPushButton("stop");
-    stopButton->setDisabled(true);
-    textBox->setReadOnly(true);
+    textBox    -> setReadOnly(true);
+    portLine   -> setPlaceholderText("Port num.");
+    portLine   -> setText("5005");
+    stopButton -> setDisabled(true);
 
-    connect(startButton, &QPushButton::pressed, this, &MyServer::slotStart);
-    connect(stopButton, &QPushButton::pressed, this, &MyServer::slotStop);
+    connect(startButton, &QPushButton::pressed,
+                   this, &MyServer::slotStart);
+    connect(stopButton, &QPushButton::pressed,
+                  this, &MyServer::slotStop);
 
-    //layout setup
 
-    QHBoxLayout* horizontal = new QHBoxLayout();
-    horizontal->addWidget(portLine);
-    horizontal->addWidget(startButton);
-    horizontal->addWidget(stopButton);
     QVBoxLayout* layout = new QVBoxLayout();
-    layout->addWidget(new QLabel("<H1>Server</H1>"));
-    layout->addWidget(textBox);
-    layout->addLayout(horizontal);
+    QHBoxLayout* lPanel = new QHBoxLayout();
+
+    lPanel -> addWidget(portLine);
+    lPanel -> addWidget(startButton);
+    lPanel -> addWidget(stopButton);
+
+    layout -> addWidget(new QLabel("<H1>Local Server</H1>"));
+    layout -> addWidget(textBox);
+
+    layout -> addLayout(lPanel);
+
     setLayout(layout);
 }
 
 void MyServer::slotNewConnection() {
 
-    QTcpSocket* pClientSocket = tcpServer->nextPendingConnection();
+    QTcpSocket* pClientSocket = server->nextPendingConnection();
 
-    connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
-    connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()));
+    connect(pClientSocket, &QAbstractSocket::disconnected,
+                           &QAbstractSocket::deleteLater);
+    connect(pClientSocket, &QAbstractSocket::readyRead,
+                     this, &MyServer::slotReadClient);
 
     sendToClient(pClientSocket, "server-response:connected");
 }
@@ -51,33 +58,48 @@ void MyServer::slotNewConnection() {
 void MyServer::slotStart() {
 
     textBox->append("*starting*");
-    tcpServer = new QTcpServer(this);
-
-    if (!tcpServer->listen(QHostAddress::Any, quint16(portLine->text().toInt()))) {
-
-        QMessageBox::critical(nullptr, "SeverError",
-                     "Unnable to start the server:" + tcpServer->errorString());
-        tcpServer->close();
-        return;
-    }
-
-    connect(tcpServer, &QTcpServer::newConnection, this, &MyServer::slotNewConnection);
-
-    textBox->append("#server is on...");
-    textBox->append(QString("host is ").append(tcpServer->serverAddress().toString()));
 
     portLine    -> setDisabled(true);
     startButton -> setDisabled(true);
     stopButton  -> setDisabled(false);
+
+    server = new QTcpServer(this);
+
+    if (!server->listen(QHostAddress::Any, quint16(portLine->text().toInt()))) {
+
+        QMessageBox::critical(nullptr, "SeverError",
+                     "Unnable to start the server:" + server->errorString());
+
+        server -> close();
+        server = nullptr;
+
+        portLine    -> setDisabled(false);
+        startButton -> setDisabled(false);
+        stopButton  -> setDisabled(true);
+
+        return;
+    }
+
+    connect(server, &QTcpServer::newConnection,
+              this, &MyServer::slotNewConnection);
+
+    textBox -> append("#server is on...");
+    textBox -> append(QString("host is ").append(server->serverAddress().toString()));
+
   }
 
 void MyServer::slotStop() {
 
-    disconnect(tcpServer, &QTcpServer::newConnection, this, &MyServer::slotNewConnection);
+    if (server){
 
-    tcpServer -> close();
-    delete tcpServer;
-    tcpServer = nullptr;
+        disconnect(server, &QTcpServer::newConnection,
+                        this, &MyServer::slotNewConnection);
+
+        if (server->isListening())
+            server -> close();
+
+        server = nullptr;
+    }
 
     textBox->clear();
 
@@ -102,7 +124,7 @@ void MyServer::slotReadClient() {
 void MyServer::sendToClient(QAbstractSocket *pSocket, const QString &str) {
 
     pSocket->write(QTime::currentTime().toString(Qt::LocalDate).
-                   append(" ").append(str).toLocal8Bit());
+                   append(" ").append(str).toUtf8());
 }
 
 
