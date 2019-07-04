@@ -75,7 +75,6 @@ void MyServer::slotStart() {
 
     textBox -> append("#server is on...");
     textBox -> append(QString("host is ").append(server->serverAddress().toString()));
-
   }
 
 void MyServer::slotStop() {
