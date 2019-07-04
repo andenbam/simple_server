@@ -96,6 +96,8 @@ void MyServer::slotReadClient() {
 //46.0.199.93
 //5000
 void MyServer::sendToClient(QTcpSocket *pSocket, const QString &str) {
+
+    pSocket->flush();
     pSocket->write(QTime::currentTime().toString(Qt::LocalDate).
                    append(" ").append(str).toStdString().c_str());
 }
