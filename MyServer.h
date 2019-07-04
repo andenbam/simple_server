@@ -16,6 +16,7 @@ private:
     QTextEdit* textBox;
     QPushButton* startButton;
     QPushButton* stopButton;
+    QVector<QAbstractSocket*>* clients;
 
 private:
     void sendToClient(QAbstractSocket* pSocket, const QString& str);

@@ -24,8 +24,8 @@ MyServer::MyServer() : QWidget () {
 
     connect(startButton, &QPushButton::pressed,
                    this, &MyServer::slotStart);
-    connect(stopButton, &QPushButton::pressed,
-                  this, &MyServer::slotStop);
+    connect(stopButton,  &QPushButton::pressed,
+                   this, &MyServer::slotStop);
 
 
     QVBoxLayout* layout = new QVBoxLayout();
@@ -45,14 +45,16 @@ MyServer::MyServer() : QWidget () {
 
 void MyServer::slotNewConnection() {
 
-    QTcpSocket* pClientSocket = server->nextPendingConnection();
+    QTcpSocket* clientSocket = server->nextPendingConnection();
 
-    connect(pClientSocket, &QAbstractSocket::disconnected,
+    clients->append(clientSocket);
+
+    connect(clientSocket, &QAbstractSocket::disconnected,
                            &QAbstractSocket::deleteLater);
-    connect(pClientSocket, &QAbstractSocket::readyRead,
+    connect(clientSocket, &QAbstractSocket::readyRead,
                      this, &MyServer::slotReadClient);
 
-    sendToClient(pClientSocket, "server-response:connected");
+    sendToClient(clientSocket, "server-response:connected");
 }
 
 void MyServer::slotStart() {
@@ -80,6 +82,8 @@ void MyServer::slotStart() {
         return;
     }
 
+    clients = new QVector<QAbstractSocket*>;
+
     connect(server, &QTcpServer::newConnection,
               this, &MyServer::slotNewConnection);
 
@@ -90,10 +94,18 @@ void MyServer::slotStart() {
 
 void MyServer::slotStop() {
 
+    for(int i = 0; i < clients->size(); i++){
+
+        clients->takeAt(i)->disconnectFromHost();
+    }
+
+    clients -> clear();
+    clients = nullptr;
+
     if (server){
 
         disconnect(server, &QTcpServer::newConnection,
-                        this, &MyServer::slotNewConnection);
+                     this, &MyServer::slotNewConnection);
 
         if (server->isListening())
             server -> close();
@@ -114,17 +126,18 @@ void MyServer::slotReadClient() {
 
     QString str = QString::fromUtf8(socket->read(256));
 
-    textBox->append(str);
+    textBox -> append(QString(QTime::currentTime().toString(Qt::LocalDate).
+                              append(" ").append("client: ").append(str)));
 
     sendToClient(socket, "server-response:received \"" + str + "\"");
 }
 
 //46.0.199.93
 //5000
-void MyServer::sendToClient(QAbstractSocket *pSocket, const QString &str) {
+void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
 
-    pSocket->write(QTime::currentTime().toString(Qt::LocalDate).
-                   append(" ").append(str).toUtf8());
+    client->write(QTime::currentTime().toString(Qt::LocalDate).
+                   append(" ").append(message).toUtf8());
 }
 
 
