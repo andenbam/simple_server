@@ -8,31 +8,31 @@
 #include <QTcpSocket>
 #include <QTime>
 
-MyServer::MyServer(int nPort, QWidget* pwgt /*=0*/) :
-                QWidget (pwgt), m_nNextBlockSize(0) {
-    m_ptcpServer = new QTcpServer(this);
-    if (!m_ptcpServer->listen(QHostAddress::Any, nPort)) {
+MyServer::MyServer(int nPort, QWidget* widget /*=0*/) :
+                QWidget (widget) {
+    tcpServer = new QTcpServer(this);
+    if (!tcpServer->listen(QHostAddress::Any, nPort)) {
         QMessageBox::critical(nullptr, "SeverError",
                               "Unnable to start the server:" +
-                              m_ptcpServer->errorString());
-        m_ptcpServer->close();
+                              tcpServer->errorString());
+        tcpServer->close();
         return;
     }
-    connect(m_ptcpServer, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
-    m_ptxt = new QTextEdit;
-    m_ptxt->setReadOnly(true);
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
+    txt = new QTextEdit;
+    txt->setReadOnly(true);
 
     //layout setup
     QVBoxLayout* pvbxLayout = new QVBoxLayout;
     pvbxLayout->addWidget(new QLabel("<H1>Server</H1>"));
-    pvbxLayout->addWidget(m_ptxt);
+    pvbxLayout->addWidget(txt);
     setLayout(pvbxLayout);
 }
 
 //MyServer::~MyServer(){}
 
 void MyServer::slotNewConnection() {
-    QTcpSocket* pClientSocket = m_ptcpServer->nextPendingConnection();
+    QTcpSocket* pClientSocket = tcpServer->nextPendingConnection();
     connect(pClientSocket, SIGNAL(disconnected()), pClientSocket, SLOT(deleteLater()));
     connect(pClientSocket, SIGNAL(readyRead()), this, SLOT(slotReadClient()));
     sendToClient(pClientSocket, "Server Response: Connected!");
@@ -40,41 +40,18 @@ void MyServer::slotNewConnection() {
 
 void MyServer::slotReadClient() {
     QTcpSocket* pClientSocket = (QTcpSocket*)sender();
-    QDataStream in(pClientSocket);
-   in.setVersion(QDataStream::Qt_5_12);
-   for (;;) {
-       if(!m_nNextBlockSize) {
-           if(pClientSocket->bytesAvailable() < sizeof(quint16)) {
-               break;
-           }
-           in >> m_nNextBlockSize;
-       }
-       if(pClientSocket->bytesAvailable() < m_nNextBlockSize) {
-           break;
-       }
-       QTime time;
-       QString str;
-       in >> time >> str;
-       QString strMessage = time.toString() + " " +
-               "Client has sent - " + str;
-       m_ptxt->append(strMessage);
-       m_nNextBlockSize = 0;
-       sendToClient(pClientSocket, "Server response: Received \"" + str + "\"");
-   }
+    char* data = new char[256];
+    pClientSocket->read(data,256);
+    QString str = QString(data);
+    txt->append(str);
+    sendToClient(pClientSocket, "Server response: Received \"" + str + "\"");
 }
 
+//46.0.199.93
+//5000
 void MyServer::sendToClient(QTcpSocket *pSocket, const QString &str) {
-
-    QByteArray arrBlock;
-
-    QDataStream out(&arrBlock, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_12);
-    out << quint16(0) << QTime::currentTime() << str;
-
-    out.device()->seek(0);
-    out << quint16(arrBlock.size() - sizeof(quint16));
-
-    pSocket->write(arrBlock);
+    pSocket->write(QTime::currentTime().toString(Qt::LocalDate).
+                   append(" ").append(str).toStdString().c_str());
 }
 
 
