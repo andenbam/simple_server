@@ -12,11 +12,13 @@
 
 MyServer::MyServer() : QWidget () {
 
+    usersAmountField      = new QLineEdit();
     textBox     = new QTextEdit();
     portLine    = new QLineEdit();
     startButton = new QPushButton("&Start");
     stopButton  = new QPushButton("&Stop");
-
+    usersAmountField     -> setText("0");
+    usersAmountField     -> setDisabled(true);
     textBox    -> setReadOnly(true);
     portLine   -> setPlaceholderText("Port num.");
     portLine   -> setText("5005");
@@ -29,15 +31,19 @@ MyServer::MyServer() : QWidget () {
 
 
     QVBoxLayout* layout = new QVBoxLayout();
+    QHBoxLayout* hPanel = new QHBoxLayout();
     QHBoxLayout* lPanel = new QHBoxLayout();
 
+
+    hPanel -> addWidget(new QLabel("<H1>Local Server</H1>"));
+    hPanel -> addWidget(new QLabel("users online:"));
+    hPanel -> addWidget(usersAmountField);
     lPanel -> addWidget(portLine);
     lPanel -> addWidget(startButton);
     lPanel -> addWidget(stopButton);
 
-    layout -> addWidget(new QLabel("<H1>Local Server</H1>"));
+    layout -> addLayout(hPanel);
     layout -> addWidget(textBox);
-
     layout -> addLayout(lPanel);
 
     setLayout(layout);
@@ -101,8 +107,8 @@ void MyServer::slotNewConnection() {
 
     QTcpSocket* clientSocket = server->nextPendingConnection();
 
-    clientsList->push_back(clientSocket);
-    clientsDescMap->insert(clientSocket, clientSocket->socketDescriptor());
+    clientsList    -> push_back(clientSocket);
+    clientsDescMap -> insert(clientSocket, clientSocket->socketDescriptor());
 
     connect(clientSocket, &QAbstractSocket::disconnected,
                       this, &MyServer::slotDisconnected);
@@ -113,6 +119,9 @@ void MyServer::slotNewConnection() {
     textBox->append(QString("user[")
                      .append(QString::number(clientSocket->socketDescriptor()))
                      .append("] connected"));
+
+    usersAmountField->setText(QString::number(clientsList->size()));
+
     sendToClient(clientSocket, "CONNECTED");
 }
 
@@ -132,8 +141,6 @@ void MyServer::slotDisconnected()
             disconnect(clientSocket, &QAbstractSocket::readyRead,
                                this, &MyServer::slotReadClient);
 
-            clientSocket   -> deleteLater();
-
             clientsList    -> removeAll(clientSocket);
             clientsDescMap -> remove(clientSocket);
 
@@ -142,6 +149,8 @@ void MyServer::slotDisconnected()
                              .append("] disconnected"));
         }
     }
+
+    usersAmountField->setText(QString::number(clientsList->size()));
 }
 
 void MyServer::slotReadClient() {
@@ -167,10 +176,6 @@ void MyServer::slotReadClient() {
 
 //46.0.199.93
 //5000
-void MyServer::setClientsDescMap(QMap<QAbstractSocket *, qintptr> *value)
-{
-    clientsDescMap = value;
-}
 
 void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
 
