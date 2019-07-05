@@ -13,10 +13,10 @@ class MyServer: public QWidget {
 private:
     QLineEdit* usersAmountField;
     QTcpServer* server;
-    QLineEdit* portLine;
+    QLineEdit* linePort;
     QTextEdit* textBox;
-    QPushButton* startButton;
-    QPushButton* stopButton;
+    QPushButton* buttonStart;
+    QPushButton* buttonStop;
     QList<QAbstractSocket*>* clientsList;
     QMap<QAbstractSocket*, qintptr>* clientsDescMap;
 

@@ -14,19 +14,19 @@ MyServer::MyServer() : QWidget () {
 
     usersAmountField      = new QLineEdit();
     textBox     = new QTextEdit();
-    portLine    = new QLineEdit();
-    startButton = new QPushButton("&Start");
-    stopButton  = new QPushButton("&Stop");
+    linePort    = new QLineEdit();
+    buttonStart = new QPushButton("&Start");
+    buttonStop  = new QPushButton("&Stop");
     usersAmountField     -> setText("0");
     usersAmountField     -> setDisabled(true);
     textBox    -> setReadOnly(true);
-    portLine   -> setPlaceholderText("Port num.");
-    portLine   -> setText("5005");
-    stopButton -> setDisabled(true);
+    linePort   -> setPlaceholderText("Port num.");
+    linePort   -> setText("5005");
+    buttonStop -> setDisabled(true);
 
-    connect(startButton, &QPushButton::pressed,
+    connect(buttonStart, &QPushButton::pressed,
                    this, &MyServer::slotStart);
-    connect(stopButton,  &QPushButton::pressed,
+    connect(buttonStop,  &QPushButton::pressed,
                    this, &MyServer::slotStop);
 
 
@@ -38,9 +38,9 @@ MyServer::MyServer() : QWidget () {
     hPanel -> addWidget(new QLabel("<H1>Local Server</H1>"));
     hPanel -> addWidget(new QLabel("users online:"));
     hPanel -> addWidget(usersAmountField);
-    lPanel -> addWidget(portLine);
-    lPanel -> addWidget(startButton);
-    lPanel -> addWidget(stopButton);
+    lPanel -> addWidget(linePort);
+    lPanel -> addWidget(buttonStart);
+    lPanel -> addWidget(buttonStop);
 
     layout -> addLayout(hPanel);
     layout -> addWidget(textBox);
@@ -53,13 +53,13 @@ void MyServer::slotStart() {
 
     textBox->append("*starting*");
 
-    portLine    -> setDisabled(true);
-    startButton -> setDisabled(true);
-    stopButton  -> setDisabled(false);
+    linePort    -> setDisabled(true);
+    buttonStart -> setDisabled(true);
+    buttonStop  -> setDisabled(false);
 
     server = new QTcpServer(this);
 
-    if (!server->listen(QHostAddress::Any, quint16(portLine->text().toInt()))) {
+    if (!server->listen(QHostAddress::Any, quint16(linePort->text().toInt()))) {
 
         QMessageBox::critical(nullptr, "SeverError",
                      "Unnable to start the server:" + server->errorString());
@@ -67,9 +67,9 @@ void MyServer::slotStart() {
         server -> close();
         server = nullptr;
 
-        portLine    -> setDisabled(false);
-        startButton -> setDisabled(false);
-        stopButton  -> setDisabled(true);
+        linePort    -> setDisabled(false);
+        buttonStart -> setDisabled(false);
+        buttonStop  -> setDisabled(true);
 
         return;
     }
@@ -98,9 +98,9 @@ void MyServer::slotStop() {
 
     textBox->clear();
 
-    portLine    -> setDisabled(false);
-    startButton -> setDisabled(false);
-    stopButton  -> setDisabled(true);
+    linePort    -> setDisabled(false);
+    buttonStart -> setDisabled(false);
+    buttonStop  -> setDisabled(true);
 }
 
 void MyServer::slotNewConnection() {
