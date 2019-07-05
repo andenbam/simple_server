@@ -12,11 +12,11 @@
 
 MyServer::MyServer() : QWidget () {
 
-    usersAmountField      = new QLineEdit();
     textBox     = new QTextEdit();
     linePort    = new QLineEdit();
     buttonStart = new QPushButton("&Start");
     buttonStop  = new QPushButton("&Stop");
+    usersAmountField      = new QLineEdit();
     usersAmountField     -> setText("0");
     usersAmountField     -> setDisabled(true);
     textBox    -> setReadOnly(true);
