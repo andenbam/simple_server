@@ -22,6 +22,7 @@ private:
 
 private:
     void sendToClient(QAbstractSocket*, const QString&);
+    void broadcast(const int user, const QString&);
 public:
     MyServer();
 
