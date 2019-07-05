@@ -125,15 +125,13 @@ void MyServer::slotNewConnection() {
     sendToClient(clientSocket, "CONNECTED");
 }
 
-void MyServer::slotDisconnected()
-{
+void MyServer::slotDisconnected(){
+
     for (int i = 0; i < clientsList->size(); i++){
 
         if (clientsList->at(i)->state() == QAbstractSocket::SocketState::UnconnectedState){
 
             QAbstractSocket* clientSocket = clientsList->at(i);
-
-            qintptr desc = clientsDescMap->value(clientSocket);
 
             disconnect(clientSocket, &QAbstractSocket::disconnected,
                                this, &MyServer::slotDisconnected);
@@ -145,7 +143,7 @@ void MyServer::slotDisconnected()
             clientsDescMap -> remove(clientSocket);
 
             textBox->append(QString("user[")
-                             .append(QString::number(desc))
+                             .append(QString::number(clientsDescMap->value(clientSocket)))
                              .append("] disconnected"));
         }
     }
@@ -174,8 +172,7 @@ void MyServer::slotReadClient() {
     sendToClient(clientSocket, QString("RECEIVED {").append(incomMessage).append("}"));
 }
 
-//46.0.199.93
-//5000
+//FORS host = 46.0.199.93 : 5000
 
 void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
 
