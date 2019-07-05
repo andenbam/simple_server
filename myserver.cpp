@@ -29,11 +29,9 @@ MyServer::MyServer() : QWidget () {
     connect(buttonStop,  &QPushButton::pressed,
                    this, &MyServer::slotStop);
 
-
     QVBoxLayout* layout = new QVBoxLayout();
     QHBoxLayout* hPanel = new QHBoxLayout();
     QHBoxLayout* lPanel = new QHBoxLayout();
-
 
     hPanel -> addWidget(new QLabel("<H1>Local Server</H1>"));
     hPanel -> addWidget(new QLabel("users online:"));
@@ -173,7 +171,6 @@ void MyServer::slotReadClient() {
 }
 
 //FORS host = 46.0.199.93 : 5000
-
 void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
 
     client->write(message.toUtf8());
