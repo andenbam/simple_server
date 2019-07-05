@@ -16,7 +16,8 @@ private:
     QTextEdit* textBox;
     QPushButton* startButton;
     QPushButton* stopButton;
-    QList<qintptr>* clientsList;
+    QList<QAbstractSocket*>* clientsList;
+    QMap<QAbstractSocket*, qintptr>* clientsDescMap;
 
 private:
     void sendToClient(QAbstractSocket*, const QString&);
@@ -27,6 +28,7 @@ public slots:
     void slotStart();
     void slotStop();
     virtual void slotNewConnection();
+    virtual void slotDisconnected();
     void slotReadClient();
 };
 #endif // MYSERVER_H

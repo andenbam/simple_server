@@ -68,7 +68,8 @@ void MyServer::slotStart() {
         return;
     }
 
-    clientsList = new QList<qintptr>;
+    clientsList    = new QList<QAbstractSocket*>();
+    clientsDescMap = new QMap<QAbstractSocket*, qintptr>();
 
     connect(server, &QTcpServer::newConnection,
               this, &MyServer::slotNewConnection);
@@ -100,37 +101,65 @@ void MyServer::slotNewConnection() {
 
     QTcpSocket* clientSocket = server->nextPendingConnection();
 
-    clientsList->push_back(clientSocket->socketDescriptor());
-
-    textBox->append(QString::number(clientSocket->socketDescriptor()));
+    clientsList->push_back(clientSocket);
+    clientsDescMap->insert(clientSocket, clientSocket->socketDescriptor());
 
     connect(clientSocket, &QAbstractSocket::disconnected,
-                          &QAbstractSocket::deleteLater);
+                      this, &MyServer::slotDisconnected);
 
     connect(clientSocket, &QAbstractSocket::readyRead,
                     this, &MyServer::slotReadClient);
 
+    textBox->append(QString("user[")
+                     .append(QString::number(clientSocket->socketDescriptor()))
+                     .append("] connected"));
     sendToClient(clientSocket, "CONNECTED");
+}
+
+void MyServer::slotDisconnected()
+{
+    for (int i = 0; i < clientsList->size(); i++){
+
+        if (clientsList->at(i)->state() == QAbstractSocket::SocketState::UnconnectedState){
+
+            QAbstractSocket* clientSocket = clientsList->at(i);
+
+            qintptr desc = clientsDescMap->value(clientSocket);
+
+            disconnect(clientSocket, &QAbstractSocket::disconnected,
+                               this, &MyServer::slotDisconnected);
+
+            disconnect(clientSocket, &QAbstractSocket::readyRead,
+                               this, &MyServer::slotReadClient);
+
+            clientSocket   -> deleteLater();
+
+            clientsList    -> removeAll(clientSocket);
+            clientsDescMap -> remove(clientSocket);
+
+            textBox->append(QString("user[")
+                             .append(QString::number(desc))
+                             .append("] disconnected"));
+        }
+    }
 }
 
 void MyServer::slotReadClient() {
 
     QAbstractSocket* clientSocket = static_cast<QAbstractSocket*>(sender());
 
-    qintptr clientIndex = -1;
+    qintptr desc = -1;
 
     for (int i = 0; i < clientsList->size(); i++) {
-        if (clientsList->at(i) == clientSocket->socketDescriptor()){
-            clientIndex = i;
+        if (clientsList->at(i) == clientSocket){
+            desc = clientSocket->socketDescriptor();
         }
     }
-
-    textBox->append(QString::number(clientSocket->socketDescriptor()));
 
     QString incomMessage = QString::fromUtf8(clientSocket->read(256));
 
     textBox -> append(QString(QTime::currentTime().toString(Qt::LocalDate)
-              .append(" ").append("client[").append(QString::number(clientIndex)).append("]: ")
+              .append(" ").append("client[").append(QString::number(desc)).append("]: ")
               .append(incomMessage)));
 
     sendToClient(clientSocket, QString("RECEIVED {").append(incomMessage).append("}"));
@@ -138,6 +167,11 @@ void MyServer::slotReadClient() {
 
 //46.0.199.93
 //5000
+void MyServer::setClientsDescMap(QMap<QAbstractSocket *, qintptr> *value)
+{
+    clientsDescMap = value;
+}
+
 void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
 
     client->write(message.toUtf8());
