@@ -138,11 +138,12 @@ void MyServer::slotDisconnected(){
                                this, &MyServer::slotReadClient);
 
             clientsList    -> removeAll(clientSocket);
-            clientsDescMap -> remove(clientSocket);
 
             textBox->append(QString("user[")
                              .append(QString::number(clientsDescMap->value(clientSocket)))
                              .append("] disconnected"));
+
+            clientsDescMap -> remove(clientSocket);
         }
     }
 
