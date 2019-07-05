@@ -152,7 +152,7 @@ void MyServer::slotDisconnected(){
 
 void MyServer::slotReadClient() {
 
-    QAbstractSocket* clientSocket = static_cast<QAbstractSocket*>(sender());
+    QAbstractSocket* clientSocket =static_cast<QAbstractSocket*>(sender());
 
     qintptr desc = -1;
 
