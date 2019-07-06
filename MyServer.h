@@ -7,24 +7,28 @@ class QTextEdit;
 class QPushButton;
 class QAbstractSocket;
 class QLineEdit;
+class QVBoxLayout;
 
 class MyServer: public QWidget {
     Q_OBJECT
 private:
-    QLineEdit* usersAmountField;
     QTcpServer* server;
+    QList<QAbstractSocket*>* clientsList;
+    QMap<QAbstractSocket*, qintptr>* clientsDescMap;
+
+    QVBoxLayout* mainLayout;
     QLineEdit* linePort;
     QTextEdit* textBox;
     QPushButton* buttonStart;
     QPushButton* buttonStop;
-    QList<QAbstractSocket*>* clientsList;
-    QMap<QAbstractSocket*, qintptr>* clientsDescMap;
+    QLineEdit* lineUsers;
 
 private:
     void sendToClient(QAbstractSocket*, const QString&);
     void broadcastFrom(QAbstractSocket*, const QString&);
 public:
     MyServer();
+    void show();
 
 public slots:
     void slotStart();

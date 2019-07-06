@@ -17,9 +17,9 @@ MyServer::MyServer() : QWidget () {
     linePort    = new QLineEdit();
     buttonStart = new QPushButton("&Start");
     buttonStop  = new QPushButton("&Stop");
-    usersAmountField      = new QLineEdit();
-    usersAmountField     -> setText("0");
-    usersAmountField     -> setDisabled(true);
+    lineUsers      = new QLineEdit();
+    lineUsers     -> setText("0");
+    lineUsers     -> setDisabled(true);
     textBox    -> setReadOnly(true);
     linePort   -> setPlaceholderText("Port num.");
     linePort   -> setText("5005");
@@ -30,22 +30,47 @@ MyServer::MyServer() : QWidget () {
     connect(buttonStop,  &QPushButton::pressed,
                    this, &MyServer::slotStop);
 
-    QVBoxLayout* layout = new QVBoxLayout();
+    mainLayout = new QVBoxLayout();
     QHBoxLayout* hPanel = new QHBoxLayout();
     QHBoxLayout* lPanel = new QHBoxLayout();
 
-    hPanel -> addWidget(new QLabel("<H1>Local Server</H1>"));
-    hPanel -> addWidget(new QLabel("users online:"));
-    hPanel -> addWidget(usersAmountField);
+    hPanel -> addWidget(new QLabel("<H3>Local Server</H3> "));
+    QLabel* usrs = new QLabel("<H3>users online:</H3>");
+    hPanel -> addWidget(usrs);
+
+    usrs->setAlignment(Qt::AlignmentFlag::AlignVCenter);
+
+    hPanel -> addWidget(lineUsers);
     lPanel -> addWidget(linePort);
     lPanel -> addWidget(buttonStart);
     lPanel -> addWidget(buttonStop);
 
-    layout -> addLayout(hPanel);
-    layout -> addWidget(textBox);
-    layout -> addLayout(lPanel);
+    mainLayout -> addLayout(hPanel);
+    mainLayout -> addWidget(textBox);
+    mainLayout -> addLayout(lPanel);
 
-    setLayout(layout);
+    setLayout(mainLayout);
+}
+
+void MyServer::show()
+{
+    QWidget::show();
+
+    int totalHeight = mainLayout->geometry().height();
+    int totalWidth  = mainLayout->geometry().width();
+
+    linePort    -> setMinimumHeight(totalHeight / 9);
+    buttonStart -> setMinimumHeight(totalHeight / 9);
+    buttonStop  -> setMinimumHeight(totalHeight / 9);
+    lineUsers   -> setMinimumHeight(totalHeight / 12);
+    lineUsers   -> setMaximumWidth(totalWidth / 6);
+    linePort    -> setMaximumWidth(totalWidth / 4);
+
+    qreal defaultFontSize = 22;
+
+    linePort->setFont(QFont(linePort->font().family(), int(defaultFontSize)));
+    textBox ->setFont(QFont(textBox->font().family(), int(defaultFontSize)));
+    lineUsers -> setFont(QFont(lineUsers->font().family(), int(defaultFontSize)));
 }
 
 void MyServer::slotStart() {
@@ -82,11 +107,22 @@ void MyServer::slotStart() {
     textBox -> append("#server is on...");
 
     QList<QHostAddress> list = QNetworkInterface::allAddresses();
+    QHostAddress address;
 
-    textBox -> append(QString("Local Network Address : [").append(list.at(2).toString()).append("]"));
-  }
 
-void MyServer::slotStop() {
+    foreach (const QNetworkInterface &netInterface, QNetworkInterface::allInterfaces()) {
+        QNetworkInterface::InterfaceFlags flags = netInterface.flags();
+        if( bool((flags & QNetworkInterface::IsRunning)) && !bool(flags & QNetworkInterface::IsLoopBack)){
+            foreach (const QNetworkAddressEntry &address, netInterface.addressEntries()) {
+                if(address.ip().protocol() == QAbstractSocket::IPv4Protocol)
+                    textBox -> append(address.ip().toString());
+            }
+        }
+    }
+
+}
+
+void MyServer::slotStop(){
 
     if (server){
 
@@ -105,7 +141,7 @@ void MyServer::slotStop() {
     buttonStop  -> setDisabled(true);
 }
 
-void MyServer::slotNewConnection() {
+void MyServer::slotNewConnection(){
 
     QTcpSocket* clientSocket = server->nextPendingConnection();
 
@@ -122,7 +158,7 @@ void MyServer::slotNewConnection() {
                      .append(QString::number(clientSocket->socketDescriptor()))
                      .append("] connected"));
 
-    usersAmountField->setText(QString::number(clientsList->size()));
+    lineUsers->setText(QString::number(clientsList->size()));
 
     sendToClient(clientSocket, "CONNECTED");
 }
@@ -143,7 +179,7 @@ void MyServer::slotDisconnected(){
 
             clientsList    -> removeAll(clientSocket);
 
-            textBox->append(QString("user[")
+            textBox        -> append(QString("user[")
                              .append(QString::number(clientsDescMap->value(clientSocket)))
                              .append("] disconnected"));
 
@@ -151,12 +187,12 @@ void MyServer::slotDisconnected(){
         }
     }
 
-    usersAmountField->setText(QString::number(clientsList->size()));
+    lineUsers -> setText(QString::number(clientsList->size()));
 }
 
 void MyServer::slotReadClient() {
 
-    QAbstractSocket* clientSocket =static_cast<QAbstractSocket*>(sender());
+    QAbstractSocket* clientSocket = static_cast <QAbstractSocket*> (sender());
 
     qintptr desc = -1;
 
@@ -177,24 +213,20 @@ void MyServer::slotReadClient() {
 }
 
 //FORS host = 46.0.199.93 : 5000
-void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
+void MyServer::sendToClient(QAbstractSocket *clientSocket, const QString &message) {
 
-    client->write(message.toUtf8());
+    clientSocket -> write(message.toUtf8());
 }
 
 void MyServer::broadcastFrom(QAbstractSocket * sender, const QString & msg)
 {
     for (int i = 0; i < clientsList->size(); i++){
 
-        QString message;
-        if (clientsList->at(i) != sender){
+        QString message = QString(clientsList->at(i) != sender ? "user[": "(you):")
+                .append(QString::number(sender->socketDescriptor()))
+                .append("]:  ").append(msg);
 
-            message = QString("user[").append(QString::number(sender->socketDescriptor())).append("]:  ").append(msg);
-        } else {
-            message = QString("(you):").append(msg);
-        }
         sendToClient(clientsList->at(i), message);
-
     }
 }
 
