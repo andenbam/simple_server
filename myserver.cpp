@@ -9,6 +9,7 @@
 #include <QTime>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QNetworkInterface>
 
 MyServer::MyServer() : QWidget () {
 
@@ -79,7 +80,10 @@ void MyServer::slotStart() {
               this, &MyServer::slotNewConnection);
 
     textBox -> append("#server is on...");
-    textBox -> append(QString("host is ").append(server->serverAddress().toString()));
+
+    QList<QHostAddress> list = QNetworkInterface::allAddresses();
+
+    textBox -> append(QString("Local Network Address : [").append(list.at(2).toString()).append("]"));
   }
 
 void MyServer::slotStop() {
