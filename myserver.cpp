@@ -169,7 +169,7 @@ void MyServer::slotReadClient() {
               .append(" ").append("client[").append(QString::number(desc)).append("]: ")
               .append(incomMessage)));
 
-    broadcast(int(desc), incomMessage);
+    broadcastFrom(clientSocket, incomMessage);
 }
 
 //FORS host = 46.0.199.93 : 5000
@@ -178,16 +178,20 @@ void MyServer::sendToClient(QAbstractSocket *client, const QString &message) {
     client->write(message.toUtf8());
 }
 
-void MyServer::broadcast(const int user, const QString & msg)
+void MyServer::broadcastFrom(QAbstractSocket * sender, const QString & msg)
 {
     for (int i = 0; i < clientsList->size(); i++){
 
-        QString message = QString("user[").append(QString::number(user)).append("]:\n").append(msg);
+        QString message;
+        if (clientsList->at(i) != sender){
 
+            message = QString("user[").append(QString::number(sender->socketDescriptor())).append("]:  ").append(msg);
+        } else {
+            message = QString("(you):").append(msg);
+        }
         sendToClient(clientsList->at(i), message);
+
     }
 }
-
-
 
 
