@@ -58,19 +58,19 @@ void MyServer::show()
 
     int totalHeight = mainLayout->geometry().height();
     int totalWidth  = mainLayout->geometry().width();
+    QFont font = QFont(linePort->font().family(), 20);
 
-    linePort    -> setMinimumHeight(totalHeight / 9);
-    buttonStart -> setMinimumHeight(totalHeight / 9);
-    buttonStop  -> setMinimumHeight(totalHeight / 9);
+    linePort    -> setMinimumHeight(totalHeight / 10);
+    buttonStart -> setMinimumHeight(totalHeight / 10);
+    buttonStop  -> setMinimumHeight(totalHeight / 10);
     lineUsers   -> setMinimumHeight(totalHeight / 12);
     lineUsers   -> setMaximumWidth(totalWidth / 6);
     linePort    -> setMaximumWidth(totalWidth / 4);
-
-    qreal defaultFontSize = 22;
-
-    linePort->setFont(QFont(linePort->font().family(), int(defaultFontSize)));
-    textBox ->setFont(QFont(textBox->font().family(), int(defaultFontSize)));
-    lineUsers -> setFont(QFont(lineUsers->font().family(), int(defaultFontSize)));
+    linePort    -> setFont(font);
+    textBox     -> setFont(font);
+    lineUsers   -> setFont(font);
+    buttonStart -> setFont(font);
+    buttonStop  -> setFont(font);
 }
 
 void MyServer::slotStart() {
