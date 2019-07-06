@@ -56,9 +56,11 @@ void MyServer::show()
 {
     QWidget::show();
 
+    int fontSize = linePort->font().pointSize() > 14 ? 24 : 14;
+
     int totalHeight = mainLayout->geometry().height();
     int totalWidth  = mainLayout->geometry().width();
-    QFont font      = QFont(linePort->font().family(), 20);
+    QFont font      = QFont(linePort->font().family(), fontSize);
 
     linePort    -> setMinimumHeight(totalHeight / 10);
     buttonStart -> setMinimumHeight(totalHeight / 10);
@@ -225,7 +227,7 @@ void MyServer::broadcastFrom(QAbstractSocket * sender, const QString & msg)
     for (int i = 0; i < clientsList->size(); i++){
 
         QString message = QString((clientsList->at(i) != sender) ?
-                          QString("user[").append(desc).append("]:  ")
+                          QString("u[").append(desc).append("]:")
                           : "(you):")
                           .append(msg);
 
