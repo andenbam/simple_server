@@ -56,7 +56,7 @@ void MyServer::show()
 {
     QWidget::show();
 
-    int fontSize = linePort->font().pointSize() > 14 ? 24 : 14;
+    int fontSize = linePort->font().pointSize() > 12 ? 24 : 12;
 
     int totalHeight = mainLayout->geometry().height();
     int totalWidth  = mainLayout->geometry().width();
