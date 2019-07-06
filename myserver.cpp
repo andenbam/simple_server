@@ -220,11 +220,14 @@ void MyServer::sendToClient(QAbstractSocket *clientSocket, const QString &messag
 
 void MyServer::broadcastFrom(QAbstractSocket * sender, const QString & msg)
 {
+    QString desc = QString::number(sender->socketDescriptor());
+
     for (int i = 0; i < clientsList->size(); i++){
 
-        QString message = QString(clientsList->at(i) != sender ? "user[": "(you):")
-                .append(QString::number(sender->socketDescriptor()))
-                .append("]:  ").append(msg);
+        QString message = QString((clientsList->at(i) != sender) ?
+                          QString("user[").append(desc).append("]:  ")
+                          : "(you):")
+                          .append(msg);
 
         sendToClient(clientsList->at(i), message);
     }
