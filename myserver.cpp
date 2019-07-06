@@ -58,7 +58,7 @@ void MyServer::show()
 
     int totalHeight = mainLayout->geometry().height();
     int totalWidth  = mainLayout->geometry().width();
-    QFont font = QFont(linePort->font().family(), 20);
+    QFont font      = QFont(linePort->font().family(), 20);
 
     linePort    -> setMinimumHeight(totalHeight / 10);
     buttonStart -> setMinimumHeight(totalHeight / 10);
