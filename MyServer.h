@@ -12,19 +12,19 @@ class QVBoxLayout;
 class MyServer: public QWidget {
     Q_OBJECT
 private:
-    QTcpServer* server;
-    QList<QAbstractSocket*>* clientsList;
+    QTcpServer*                      server;
+    QList<QAbstractSocket*>*         clientsList;
     QMap<QAbstractSocket*, qintptr>* clientsDescMap;
 
     QVBoxLayout* mainLayout;
-    QLineEdit* linePort;
-    QTextEdit* textBox;
+    QLineEdit*   linePort;
+    QTextEdit*   textBox;
     QPushButton* buttonStart;
     QPushButton* buttonStop;
-    QLineEdit* lineUsers;
+    QLineEdit*   lineUsers;
 
 private:
-    void sendToClient(QAbstractSocket*, const QString&);
+    void sendToClient(QAbstractSocket*,  const QString&);
     void broadcastFrom(QAbstractSocket*, const QString&);
 public:
     MyServer();
