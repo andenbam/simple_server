@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QNetworkInterface>
+#include <QHostInfo>
 
 MyServer::MyServer() : QWidget () {
 
@@ -77,8 +78,7 @@ void MyServer::show()
 
 void MyServer::slotStart() {
 
-    textBox->append("*starting*");
-
+    textBox     -> append("*starting*");
     linePort    -> setDisabled(true);
     buttonStart -> setDisabled(true);
     buttonStop  -> setDisabled(false);
@@ -121,7 +121,6 @@ void MyServer::slotStart() {
             }
         }
     }
-
 }
 
 void MyServer::slotStop(){
@@ -136,8 +135,7 @@ void MyServer::slotStop(){
         server = nullptr;
     }
 
-    textBox->clear();
-
+    textBox     -> clear();
     linePort    -> setDisabled(false);
     buttonStart -> setDisabled(false);
     buttonStop  -> setDisabled(true);
