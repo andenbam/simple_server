@@ -12,9 +12,15 @@ class QVBoxLayout;
 class MyServer: public QWidget {
     Q_OBJECT
 private:
+
+    QList<QString>* namesBuffer = new QList<QString>{"Lion", "Tiger", "Turtle", "Monkey",
+                                                       "Kitten", "Doggy", "Starfish", "Shark",
+                                                        "Jaguar", "Giraffe", "Elephant", "Deer",
+                                                        "Crocodile", "Panda", "Bear", "Wolf"};
+
     QTcpServer*                      server;
     QList<QAbstractSocket*>*         clientsList;
-    QMap<QAbstractSocket*, qintptr>* clientsDescMap;
+    QMap<QAbstractSocket*, QString>* clientsNamesMap;
 
     QVBoxLayout* mainLayout;
     QLineEdit*   linePort;
@@ -24,6 +30,7 @@ private:
     QLineEdit*   lineUsers;
 
 private:
+    void clearConsole();
     void sendToClient(QAbstractSocket*,  const QString&);
     void broadcastFrom(QAbstractSocket*, const QString&);
 public:
@@ -31,6 +38,8 @@ public:
     void show();
 
 public slots:
+
+    void gotExternalAddress(QString address);
     void slotStart();
     void slotStop();
     virtual void slotNewConnection();

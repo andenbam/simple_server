@@ -1,6 +1,5 @@
 #ifndef TESTEXTERNALADDRESS_H
 #define TESTEXTERNALADDRESS_H
-
 /*
     Этот класс был взят с официального форума forum.qt.io :
     https://forum.qt.io/topic/86025/qt-get-external-ip-address-using-qnetworkreply/2
@@ -10,7 +9,6 @@
     Решает проблему отыскания адреса для осуществления подключения
     к нашему серверу Simple Server.
 */
-
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QHostAddress>
@@ -21,10 +19,11 @@ class TestExternalAddress : public QObject
     Q_OBJECT
 
 public:
-    TestExternalAddress();
+     TestExternalAddress();
 
 private slots:
     void gotReply(QNetworkReply* networkReply);
+signals:
+    void gotAddress(QString address);
 };
-
 #endif // TESTEXTERNALADDRESS_H
