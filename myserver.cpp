@@ -143,8 +143,8 @@ void MyServer::slotNewConnection(){
     QTcpSocket* clientSocket = server->nextPendingConnection();
 
     clientsList    -> push_back(clientSocket);
-    QString newName = QString(namesBuffer->at((991 * QTime::currentTime().msec()) % 16))
-            .append(QString(QString::number((999 * int(QTime::currentTime().msec()) % 999))));
+    QString newName = QString(namesBuffer->at((757 * QTime::currentTime().msec()) % 16))
+            .append(QString(QString::number((2053 * int(QTime::currentTime().msec()) % 1000))));
     clientsNamesMap -> insert(clientSocket, newName);
 
     connect(clientSocket, &QAbstractSocket::disconnected,
