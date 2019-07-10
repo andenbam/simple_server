@@ -25,7 +25,7 @@ MyServer::MyServer() : QWidget () {
     lineUsers     -> setDisabled(true);
     textBox    -> setReadOnly(true);
     linePort   -> setPlaceholderText("#port");
-    linePort   -> setText("8080");
+    linePort   -> setText("5005");
     buttonStop -> setDisabled(true);
 
     connect(buttonStart, &QPushButton::pressed,
