@@ -22,6 +22,7 @@ private:
     QList<QAbstractSocket*>*         clientsList;
     QMap<QAbstractSocket*, QString>* clientsNamesMap;
 
+    QString externalAddress = "";
     QVBoxLayout* mainLayout;
     QLineEdit*   linePort;
     QTextEdit*   textBox;

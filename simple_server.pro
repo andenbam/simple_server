@@ -1,16 +1,11 @@
-QT += gui
-QT += network
-QT += widgets
-QT += core
-CONFIG -= c++11 console
-CONFIG -= app_bundle
-
+QT += core gui widgets network
+CONFIG += app_bundle
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
-                   main.cpp \
-               myserver.cpp \
-    testexternaladdress.cpp
+        main.cpp \
+        myserver.cpp \
+        testexternaladdress.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

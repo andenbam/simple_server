@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QNetworkInterface>
 #include <QHostInfo>
+#include <QGroupBox>
 
 MyServer::MyServer() : QWidget () {
 
@@ -23,65 +24,52 @@ MyServer::MyServer() : QWidget () {
     lineUsers     -> setText("0");
     lineUsers     -> setDisabled(true);
     textBox    -> setReadOnly(true);
-    linePort   -> setPlaceholderText("Port num.");
-    linePort   -> setText("5005");
+    linePort   -> setPlaceholderText("#port");
+    linePort   -> setText("8080");
     buttonStop -> setDisabled(true);
 
     connect(buttonStart, &QPushButton::pressed,
                    this, &MyServer::slotStart);
     connect(buttonStop,  &QPushButton::pressed,
                    this, &MyServer::slotStop);
-
-    mainLayout = new QVBoxLayout();
-    QHBoxLayout* hPanel = new QHBoxLayout();
-    QHBoxLayout* lPanel = new QHBoxLayout();
-
-    hPanel -> addWidget(new QLabel("<H3>Local Server</H3> "));
-    QLabel* usrs = new QLabel("<H3>users online:</H3>");
-    hPanel -> addWidget(usrs);
-
-    usrs->setAlignment(Qt::AlignmentFlag::AlignVCenter);
-
-    hPanel -> addWidget(lineUsers);
-    lPanel -> addWidget(linePort);
-    lPanel -> addWidget(buttonStart);
-    lPanel -> addWidget(buttonStop);
-
-    mainLayout -> addLayout(hPanel);
-    mainLayout -> addWidget(textBox);
-    mainLayout -> addLayout(lPanel);
-
-    setLayout(mainLayout);
 }
 
-void MyServer::show()
-{   
+void MyServer::show() {
+
+    connect(new TestExternalAddress(), &TestExternalAddress::gotAddress,
+                                 this, &MyServer::gotExternalAddress);
+
+    mainLayout          = new QVBoxLayout();
+    QHBoxLayout* hPanel = new QHBoxLayout();
+
+    hPanel -> addWidget(linePort);
+    hPanel -> addWidget(buttonStart);
+    hPanel -> addWidget(buttonStop);
+    hPanel -> addWidget(new QLabel("users online:"));
+    hPanel -> addWidget(lineUsers);
+
+    QGroupBox* gBox = new QGroupBox("Server Settings");
+    QGroupBox* oBox = new QGroupBox("Simple Server Output");
+
+    QVBoxLayout* vboxlayout = new QVBoxLayout();
+    vboxlayout->addWidget(textBox);
+
+    gBox   -> setLayout(hPanel);
+    oBox   -> setLayout(vboxlayout);
+    mainLayout -> addWidget(gBox);
+    mainLayout -> addWidget(oBox);
+
+    setLayout(mainLayout);
+
     QWidget::show();
 
     clearConsole();
-
-    int fontSize = linePort->font().pointSize() > 12 ? 24 : 12;
-
-    int totalHeight = mainLayout->geometry().height();
-    int totalWidth  = mainLayout->geometry().width();
-    QFont font      = QFont(linePort->font().family(), fontSize);
-
-    linePort    -> setMinimumHeight(totalHeight / 10);
-    buttonStart -> setMinimumHeight(totalHeight / 10);
-    buttonStop  -> setMinimumHeight(totalHeight / 10);
-    lineUsers   -> setMinimumHeight(totalHeight / 12);
-    lineUsers   -> setMaximumWidth(totalWidth / 6);
-    linePort    -> setMaximumWidth(totalWidth / 4);
-    linePort    -> setFont(font);
-    textBox     -> setFont(font);
-    lineUsers   -> setFont(font);
-    buttonStart -> setFont(font);
-    buttonStop  -> setFont(font);
 }
 
 void MyServer::gotExternalAddress(QString address) {
 
-    textBox -> append(QString("External address: ").append(address));
+    externalAddress = address;
+    textBox -> append(QString("External address: ").append(externalAddress));
 }
 
 void MyServer::slotStart() {
@@ -216,9 +204,8 @@ void MyServer::clearConsole()
             }
         }
     }
-
-    TestExternalAddress* tea = new TestExternalAddress();
-    connect(tea, &TestExternalAddress::gotAddress, this, &MyServer::gotExternalAddress);
+    if (externalAddress != "")
+        textBox -> append(QString("External address: ").append(externalAddress));
 }
 
 void MyServer::sendToClient(QAbstractSocket *clientSocket, const QString &message) {
