@@ -81,8 +81,8 @@ void MyServer::slotStart() {
     buttonStop  -> setDisabled(false);
 
     server = new SslServer(this);
-    server->setSslLocalCertificate("cert.pem");
-    server->setSslPrivateKey("key.pem");
+    server->setSslLocalCertificate("sslserver.pem");
+    server->setSslPrivateKey("sslserver.key");
     server->setSslProtocol(QSsl::TlsV1_2);
 
     if (!server->listen(QHostAddress::Any, quint16(linePort->text().toInt()))) {
