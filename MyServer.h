@@ -1,6 +1,8 @@
 #ifndef MYSERVER_H
 #define MYSERVER_H
 
+#include "SslServer.h"
+
 #include <QWidget>
 class QTcpServer;
 class QTextEdit;
@@ -18,7 +20,7 @@ private:
                                                         "Jaguar", "Giraffe", "Elephant", "Deer",
                                                         "Crocodile", "Panda", "Bear", "Wolf"};
 
-    QTcpServer*                      server;
+    SslServer*                      server;
     QList<QAbstractSocket*>*         clientsList;
     QMap<QAbstractSocket*, QString>* clientsNamesMap;
 

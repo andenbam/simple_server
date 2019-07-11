@@ -4,7 +4,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        SslServer.h \
+        SslServer.cpp \
         myserver.cpp \
         testexternaladdress.cpp
 
@@ -17,3 +17,9 @@ HEADERS += \
     MyServer.h \
     SslServer.h \
     testexternaladdress.h
+
+LIBS +
+
+DISTFILES += \
+    cert.pem \
+    key.pem

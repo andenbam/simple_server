@@ -48,7 +48,6 @@ public:
 protected:
     void incomingConnection(qintptr socketDescriptor) override final;
 
-
 private:
     QSslCertificate m_sslLocalCertificate;
     QSslKey m_sslPrivateKey;
