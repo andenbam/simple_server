@@ -1,4 +1,4 @@
-/**
+/*
     Этот класс был взят с официального форума forum.qt.io :
     https://forum.qt.io/topic/86025/qt-get-external-ip-address-using-qnetworkreply/2
 
