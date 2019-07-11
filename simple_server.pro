@@ -18,8 +18,6 @@ HEADERS += \
     SslServer.h \
     testexternaladdress.h
 
-LIBS +
-
 DISTFILES += \
     cert.pem \
     key.pem
