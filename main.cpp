@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QtWidgets>
-#include "MyServer.h"
+#include "myserver.h"
 
 int main(int argc, char *argv[]) {
 

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "SslServer.h"
 
 #include <QFile>
@@ -31,7 +30,7 @@ SslServer::SslServer(QObject *parent) : QTcpServer(parent),
 
 void SslServer::incomingConnection(qintptr socketDescriptor){
 
-    // Create socket
+    // Creates socket
     QSslSocket *sslSocket = new QSslSocket(this);
     sslSocket->setSocketDescriptor(socketDescriptor);
     sslSocket->setLocalCertificate(m_sslLocalCertificate);
@@ -39,7 +38,7 @@ void SslServer::incomingConnection(qintptr socketDescriptor){
     sslSocket->setProtocol(m_sslProtocol);
     sslSocket->startServerEncryption();
 
-    // Add to the internal list of pending connections (see Qt doc: http://qt-project.org/doc/qt-5/qtcpserver.html#addPendingConnection)
+    // Adds to the internal list of pending connections (see Qt doc: http://qt-project.org/doc/qt-5/qtcpserver.html#addPendingConnection)
     this->addPendingConnection(sslSocket);
 }
 

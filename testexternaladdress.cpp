@@ -13,12 +13,15 @@
 TestExternalAddress::TestExternalAddress()
 {
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-    connect(manager,SIGNAL(finished(QNetworkReply*)),SLOT(gotReply(QNetworkReply*)));
+
+    connect(manager,&QNetworkAccessManager::finished,
+              this, &TestExternalAddress::gotReply);
+
     manager->get(QNetworkRequest(QUrl("https://api.ipify.org?format=json")));
 }
 
-void TestExternalAddress::gotReply(QNetworkReply* networkReply)
-{
+void TestExternalAddress::gotReply(QNetworkReply* networkReply) {
+
     networkReply->deleteLater();
     emit gotAddress(QHostAddress(QJsonDocument::fromJson(networkReply->readAll()).object().value("ip").toString()).toString());
 }

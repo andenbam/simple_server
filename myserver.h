@@ -4,10 +4,9 @@
 #include "SslServer.h"
 
 #include <QWidget>
-class QTcpServer;
 class QTextEdit;
 class QPushButton;
-class QAbstractSocket;
+class QSslSocket;
 class QLineEdit;
 class QVBoxLayout;
 
@@ -21,8 +20,8 @@ private:
                                                         "Crocodile", "Panda", "Bear", "Wolf"};
 
     SslServer*                      server;
-    QList<QAbstractSocket*>*         clientsList;
-    QMap<QAbstractSocket*, QString>* clientsNamesMap;
+    QList<QSslSocket*>*         clientsList;
+    QMap<qintptr, QString>* clientsNamesMap;
 
     QString externalAddress = "";
     QVBoxLayout* mainLayout;
@@ -34,8 +33,8 @@ private:
 
 private:
     void clearConsole();
-    void sendToClient(QAbstractSocket*,  const QString&);
-    void broadcastFrom(QAbstractSocket*, const QString&);
+    void sendToClient(QSslSocket*,  const QString&);
+    void broadcastFrom(QSslSocket*, const QString&);
 public:
     MyServer();
     void show();

@@ -14,10 +14,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    MyServer.h \
     SslServer.h \
+    myserver.h \
     testexternaladdress.h
 
 DISTFILES += \
-    cert.pem \
-    key.pem
+    genSSL.sh \
+    server.crt \
+    server.key

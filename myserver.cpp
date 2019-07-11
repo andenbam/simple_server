@@ -1,7 +1,6 @@
-#include "MyServer.h"
+#include "myserver.h"
 #include "testexternaladdress.h"
 #include <QMessageBox>
-#include <QTcpServer>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -81,8 +80,8 @@ void MyServer::slotStart() {
     buttonStop  -> setDisabled(false);
 
     server = new SslServer(this);
-    server->setSslLocalCertificate("cert.pem");
-    server->setSslPrivateKey("key.pem");
+    server->setSslLocalCertificate("server.crt");
+    server->setSslPrivateKey("server.key", QSsl::Rsa,QSsl::Pem);
     server->setSslProtocol(QSsl::TlsV1_2);
 
     if (!server->listen(QHostAddress::Any, quint16(linePort->text().toInt()))) {
@@ -100,16 +99,16 @@ void MyServer::slotStart() {
         return;
     }
 
-    clientsList    = new QList<QAbstractSocket*>();
-    clientsNamesMap = new QMap<QAbstractSocket*, QString>();
+    clientsList    = new QList<QSslSocket*>();
+    clientsNamesMap = new QMap<qintptr, QString>();
 
     connect(server, &QTcpServer::newConnection,
               this, &MyServer::slotNewConnection);
 
-    textBox -> append("SERVER IS LISTENING...");
+ //   QThread* thread = new ServerThread(server);
+  //  thread->start();
 
-    QList<QHostAddress> list = QNetworkInterface::allAddresses();
-    QHostAddress address;
+    textBox -> append("SERVER IS LISTENING...");
 }
 
 void MyServer::slotStop(){
@@ -125,7 +124,8 @@ void MyServer::slotStop(){
     }
 
     clearConsole();
-
+    clientsList -> clear();
+    lineUsers   -> setText(QString::number(clientsList->size()));
     linePort    -> setDisabled(false);
     buttonStart -> setDisabled(false);
     buttonStop  -> setDisabled(true);
@@ -134,20 +134,23 @@ void MyServer::slotStop(){
 void MyServer::slotNewConnection(){
 
     QSslSocket* clientSocket = dynamic_cast<QSslSocket*> (server->nextPendingConnection());
+    if (clientsList->contains(clientSocket)) return;
 
     clientsList    -> push_back(clientSocket);
+
     QString newName = QString(namesBuffer->at((757 * QTime::currentTime().msec()) % 16))
             .append(QString(QString::number((2053 * int(QTime::currentTime().msec()) % 1000))));
-    clientsNamesMap -> insert(clientSocket, newName);
 
-    connect(clientSocket, &QAbstractSocket::disconnected,
+    clientsNamesMap -> insert(clientSocket->socketDescriptor(), newName);
+
+    connect(clientSocket, &QSslSocket::disconnected,
                       this, &MyServer::slotDisconnected);
 
-    connect(clientSocket, &QAbstractSocket::readyRead,
+    connect(clientSocket, &QSslSocket::readyRead,
                     this, &MyServer::slotReadClient);
 
     textBox-> append(QString("user \"")
-                     .append(clientsNamesMap->value(clientSocket, ""))
+                     .append(clientsNamesMap->value(clientSocket->socketDescriptor()))
                      .append("\" connected"));
 
     lineUsers->setText(QString::number(clientsList->size()));
@@ -157,39 +160,43 @@ void MyServer::slotNewConnection(){
 
 void MyServer::slotDisconnected(){
 
+    int disconn = -1;
+
     for (int i = 0; i < clientsList->size(); i++){
+        if (clientsList->at(i)->state() == QSslSocket::SocketState::UnconnectedState){
 
-        if (clientsList->at(i)->state() == QAbstractSocket::SocketState::UnconnectedState){
-
-            QAbstractSocket* clientSocket = clientsList->at(i);
-
-            disconnect(clientSocket, &QAbstractSocket::disconnected,
-                               this, &MyServer::slotDisconnected);
-
-            disconnect(clientSocket, &QAbstractSocket::readyRead,
-                               this, &MyServer::slotReadClient);
-
-            clientsList    -> removeAll(clientSocket);
-
-            textBox        -> append(QString("user \"")
-                             .append(clientsNamesMap->value(clientSocket, ""))
-                             .append("\" disconnected"));
-
-            clientsNamesMap -> remove(clientSocket);
+            disconn = i;
+            break;
         }
     }
+
+    QSslSocket* clientSocket = clientsList->at(disconn);
+
+    disconnect(clientSocket, &QSslSocket::disconnected,
+                       this, &MyServer::slotDisconnected);
+
+    disconnect(clientSocket, &QSslSocket::readyRead,
+                       this, &MyServer::slotReadClient);
+
+    clientsList    -> removeAll(clientSocket);
+
+    textBox        -> append(QString("user \"")
+                     .append(clientsNamesMap->value(clientSocket->socketDescriptor(), ""))
+                     .append("\" disconnected"));
+
+    clientsNamesMap -> remove(clientSocket->socketDescriptor());
 
     lineUsers -> setText(QString::number(clientsList->size()));
 }
 
 void MyServer::slotReadClient() {
 
-    QAbstractSocket* clientSocket = static_cast <QAbstractSocket*> (sender());
+    QSslSocket* clientSocket = static_cast <QSslSocket*> (sender());
 
-    QString incomMessage = QString::fromUtf8(clientSocket->read(256));
+    QString incomMessage = QString(clientSocket->readAll());
 
     textBox -> append(QString(QTime::currentTime().toString(Qt::LocalDate)
-              .append(" | ").append(clientsNamesMap->value(clientSocket))
+              .append(" | ").append(clientsNamesMap->value(clientSocket->socketDescriptor()))
               .append(" : ").append(incomMessage)));
 
     broadcastFrom(clientSocket, incomMessage);
@@ -204,7 +211,7 @@ void MyServer::clearConsole()
         QNetworkInterface::InterfaceFlags flags = netInterface.flags();
         if( bool((flags & QNetworkInterface::IsRunning)) && !bool(flags & QNetworkInterface::IsLoopBack)){
             foreach (const QNetworkAddressEntry &address, netInterface.addressEntries()) {
-                if(address.ip().protocol() == QAbstractSocket::IPv4Protocol)
+                if(address.ip().protocol() == QSslSocket::IPv4Protocol)
                     textBox -> append(QString("Local address: ").append(address.ip().toString()));
             }
         }
@@ -213,18 +220,18 @@ void MyServer::clearConsole()
         textBox -> append(QString("External address: ").append(externalAddress));
 }
 
-void MyServer::sendToClient(QAbstractSocket *clientSocket, const QString &message) {
+void MyServer::sendToClient(QSslSocket* socket, const QString &message) {
 
-    clientSocket -> write(message.toUtf8());
+    socket -> write(message.toUtf8());
 }
 
-void MyServer::broadcastFrom(QAbstractSocket * sender, const QString & msg)
+void MyServer::broadcastFrom(QSslSocket* socket, const QString & msg)
 {
     for (int i = 0; i < clientsList->size(); i++){
 
         QString message = QString(
-                    (clientsList->at(i) != sender) ?
-                    QString(clientsNamesMap->value(sender))
+                    (clientsList->at(i) != socket) ?
+                    QString(clientsNamesMap->value(socket->socketDescriptor()))
                     : "you")
                     .append(" : ").append(msg);
 
