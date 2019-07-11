@@ -154,8 +154,6 @@ void MyServer::slotNewConnection(){
                      .append("\" connected"));
 
     lineUsers->setText(QString::number(clientsList->size()));
-
-    sendToClient(clientSocket, "CONNECTED");
 }
 
 void MyServer::slotDisconnected(){
