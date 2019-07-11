@@ -1,9 +1,10 @@
 QT += core gui widgets network
-CONFIG += app_bundle
+CONFIG += app_bundle static
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
+        SslServer.cpp \
         myserver.cpp \
         testexternaladdress.cpp
 
@@ -14,4 +15,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     MyServer.h \
+    SslServer.h \
     testexternaladdress.h
+
+DISTFILES += \
+    cert.pem \
+    key.pem
