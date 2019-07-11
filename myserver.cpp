@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDataStream>
+#include <QTcpSocket>
 #include <QTime>
 #include <QLineEdit>
 #include <QPushButton>
@@ -21,14 +22,11 @@ MyServer::MyServer() : QWidget () {
     buttonStop  = new QPushButton("&Stop");
     lineUsers      = new QLineEdit();
     lineUsers     -> setText("0");
-    lineUsers     -> setModified(false);
+    lineUsers     -> setDisabled(true);
     textBox    -> setReadOnly(true);
     linePort   -> setPlaceholderText("#port");
     linePort   -> setText("5005");
     buttonStop -> setDisabled(true);
-
-    connect(linePort, &QLineEdit::returnPressed,
-                buttonStart, &QPushButton::click);
 
     connect(buttonStart, &QPushButton::pressed,
                    this, &MyServer::slotStart);
@@ -80,10 +78,7 @@ void MyServer::slotStart() {
     buttonStart -> setDisabled(true);
     buttonStop  -> setDisabled(false);
 
-    server = new SslServer(this);
-    server->setSslLocalCertificate("cert.pem");
-    server->setSslPrivateKey("key.pem");
-    server->setSslProtocol(QSsl::TlsV1_2);
+    server = new QTcpServer(this);
 
     if (!server->listen(QHostAddress::Any, quint16(linePort->text().toInt()))) {
 
@@ -133,7 +128,7 @@ void MyServer::slotStop(){
 
 void MyServer::slotNewConnection(){
 
-    QSslSocket* clientSocket = dynamic_cast<QSslSocket*> (server->nextPendingConnection());
+    QTcpSocket* clientSocket = server->nextPendingConnection();
 
     clientsList    -> push_back(clientSocket);
     QString newName = QString(namesBuffer->at((757 * QTime::currentTime().msec()) % 16))
