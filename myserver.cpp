@@ -21,11 +21,14 @@ MyServer::MyServer() : QWidget () {
     buttonStop  = new QPushButton("&Stop");
     lineUsers      = new QLineEdit();
     lineUsers     -> setText("0");
-    lineUsers     -> setDisabled(true);
+    lineUsers     -> setModified(false);
     textBox    -> setReadOnly(true);
     linePort   -> setPlaceholderText("#port");
     linePort   -> setText("5005");
     buttonStop -> setDisabled(true);
+
+    connect(linePort, &QLineEdit::returnPressed,
+                buttonStart, &QPushButton::click);
 
     connect(buttonStart, &QPushButton::pressed,
                    this, &MyServer::slotStart);
